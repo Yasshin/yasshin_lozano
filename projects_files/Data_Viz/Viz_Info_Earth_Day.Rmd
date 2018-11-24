@@ -1,0 +1,41 @@
+---
+title: "Assignment 2: Answering the Quesations"
+output: html_notebook
+author: Yasshin Lozano
+---
+![Earth Day](https://www.census.gov/content/census/en/library/visualizations/2017/comm/earth_day/jcr:content/map.detailitem.800.high.jpg/1489074163480.jpg)
+
+###Who?
+Business establishments that generate energy through different methods or sources. The audience of this visualization would be anyone who cares about the environment.
+
+###What?
+There are 6 different forms of creating energy. The columns represent how many establishments there are for each generation of energy, how many paid employees run that facility, and the anual payroll of the establishment. The visualization is celebrating all the establishments creating renewable energy to help the Earth. 
+
+###How?
+The visualization does an okay job at displaying the information, but it could be presented better. I believe this can easily be done in a bar chart. 
+
+```{r}
+Power_Generation <- c("Hydroelectric ($277M)","Wind ($316M)","Solar ($126M)","Biomass ($99M)","Geothermal ($114M)","Other ($241M)")
+Num_of_Est <- c(412,239,108,101,44,279)
+Paid_Employees <- c(3201,2795,1167,1360,1174,2759)
+Annual_payroll <- c(277,316,126,99,114,240)
+df <- data.frame(Power_Generation,Num_of_Est,Paid_Employees,Annual_payroll)
+```
+
+```{r}
+library(tidyverse)
+ggplot(df, aes(Power_Generation,Num_of_Est,fill=Power_Generation)) +
+  geom_bar(stat="identity") +
+  
+  geom_text(aes(label=Num_of_Est),position=position_dodge(width=0.5),vjust=0.9,color="Black") +
+  
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  
+  labs(y="Number of Establishment",x="Electrical Power Generation") +
+  
+  ggtitle("Celebrating Earth Day", subtitle = "The annual payroll of each establishment is defined next to each facility") +
+  
+  theme(axis.text.x = element_blank()) +
+  
+  scale_fill_manual("Energy", values = c("Hydroelectric ($277M)"="#33C0FF","Wind ($316M)"="light blue","Solar ($126M)"="yellow","Biomass ($99M)"="#70E769","Geothermal ($114M)"="#FFD068","Other ($241M)"="#F9CBFF")) 
+```

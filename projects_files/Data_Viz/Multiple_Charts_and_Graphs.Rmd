@@ -1,0 +1,38 @@
+---
+title: "Assignment 3"
+output: html_notebook
+author: "Yasshin Lozano"
+---
+```{r,message=FALSE,warning=FALSE}
+library(tidyverse)
+msleep
+```
+###Scatter Plot
+```{r,message=FALSE}
+#The more an animal is awake the higher body weight they will have. There is a weak correlation between body weight and how long they are awake. Herbivores vary more in time awake than other vores. Omnivores are not awake more than 15 hours a day and some insecti sleep a lot.
+ggplot(data = msleep,aes(x=awake, y=bodywt))+
+  geom_point(aes(color=vore))+
+  scale_y_log10()
+```
+
+###Line Graph
+```{r}
+#Herbivores have a higher body weight the more they are awake. Carnivores vary in size and time awake, so it is hard to see a continous trend.
+ggplot(data = msleep,aes(x=awake, y=bodywt))+
+  geom_line(aes(color=vore))+
+  scale_y_log10()
+```
+
+###Stacked horizontal bar chart
+```{r}
+ggplot(data = msleep,aes(x=vore, y=awake, fill= order))+
+  geom_bar(stat = "identity")+
+  coord_flip()
+```
+
+###Stacked vertical bar chart
+```{r}
+ggplot(data = msleep,aes(x=vore, y=awake, fill= order))+
+  geom_bar(stat = "identity")
+```
+

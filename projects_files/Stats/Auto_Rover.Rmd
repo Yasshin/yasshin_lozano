@@ -1,0 +1,168 @@
+---
+title: "Stats Project"
+author: "Yasshin Lozano"
+output:
+  html_document:
+    df_print: paged
+---
+
+#Part 1: Introduction
+The data set I used was based on a summer research I participated in: The Evaluation of an autonomous vehicle utilizing self-adpative controller for onstacle avoidance.
+
+<img src="https://puu.sh/xZ3cB/4952ae925f.jpg" width="50%" height="auto"><img src="https://puu.sh/xZ395/b7cb68e561.png" width="50%" height="auto">
+
+
+
+
+
+
+Does sensitivity vs efficiency have an effect on the outcome of the autonomous rover through two different mazes, if so what would be the optimal setup for each maze? Based on the setup of rover, which consist of the sensitivity of the infrared sensor, ultra-sonic sensor, distance of nudge threshold in inches, nudge turn degree, and motor speed, we can predict the efficiency percentage of each maze. 
+
+This type of small scale research can benefit self-driving cars such as the Tesla to find the optimal speed and sensitivity setup to go at without crashing into something for each city. All cities and counties are different so different setups are need to reduce, and hopefully negate, the chance of the car causing an accident. 
+
+Background of predictor variables: The infrared threshold is a measurement of how "bright" an object is based on the reflected light. The ultrasonic threshold is a measurement of distance using ultrasonic waves that echo back the measurement. The nudge threshold tells the rover when to adjust itself when it thinks it might hit a wall based on how far it detects the object. In this case the nudge threshold is measured in inches. The nudge is the degree the rover will turn when detecting a wall. The motor speed controls how fast the motors on the rover are going.
+
+#Part 2: Exploratory data analysis
+
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(readr)
+library(car)
+Maze_Data <- read.csv(file="J:/MASTERS/Stats/Project/MaDa.csv",  header = T, sep = ",")
+Maze1 <- read.csv(file="J:/MASTERS/Stats/Project/Maze1.csv",  header = T, sep = ",")
+Maze2 <- read.csv(file="J:/MASTERS/Stats/Project/Maze2.csv",  header = T, sep = ",")
+```
+
+
+```{r}
+summary(Maze_Data)
+```
+ 
+```{r}
+#Predictors are the thresholds, nudge and motor.speed. Sensitivity is the sum of the predictors.
+predictors <- Maze_Data[ ,8:12]
+pm <- sapply(predictors, sd)
+```
+The predictors are what effect the pass score.
+
+```{r}
+summary(Maze1)
+```
+
+```{r}
+summary(Maze2)
+```
+
+```{r}
+cor(Sensitivity, Pass.Score)
+```
+I am checking the correlation of the sensitivity on the pass score. It has a moderate downhill linear relationship. Meaning as the sensitivity goes up the pass score goes slightly down. In numbers this is true, but in fact during the physical experiment the sensitivity was somewhat the same as you will see in the folowwing graphs. 
+
+```{r}
+cor(Maze_Data$IR_Threshold, Maze_Data$Pass.Score)
+cor(Maze_Data$US_Threshold, Maze_Data$Pass.Score)
+cor(Maze_Data$Nudge_Threshold, Maze_Data$Pass.Score)
+cor(Maze_Data$Nudge, Maze_Data$Pass.Score)
+cor(Maze_Data$Motor.Speed, Maze_Data$Pass.Score)
+```
+If the 'Sensitivity' does not have that much of an impact, even though it should, I wanted to see which threshold is effecting the pass score the most. 'IR_Threshold' had the least correlation with the 'Pass.Score'. 'US_Threshold', 'Nudge_Threshold' and 'Nudge' all had the same correlation on the 'Pass.Score'. The 'Motor.Speed' had the biggest effect on the 'Pass.Score' as expected. 
+
+
+```{r}
+ggplot(Maze1, aes(x=as.factor(Sensitivity), y=Pass.Score, shape = as.factor(Pass), color = as.factor(Sensitivity), group = as.factor(Sensitivity))) + geom_point(aes(size=Crashes), position = position_jitter(w=0.1, h=0.01)) + geom_line()
+```
+In maze 1 most of the test performed completed the maze, but a little less than half crashed into a wall. Every sensitivity had at least 1 run where it crashed into something. The colors are separated by sensitivity as a factor to represent each test with a certain setup of thresholds. A triangle shape represents the rover completing the maze.  
+
+```{r}
+ggplot(Maze2, aes(x=as.factor(Sensitivity), y=Pass.Score, shape = as.factor(Pass), color = as.factor(Sensitivity), group = as.factor(Sensitivity)))+  
+  geom_point(aes(size=Crashes),position = position_jitter(w=0.1, h=0.01)) + geom_line()
+```
+In maze 2 the rover performed slightly worse than in maze 1. More crashes occurred in maze 2 than in maze 1 and the majority of the sensitivities did not complete the maze. A sensitivity of 15.4 and 27.4 performed the best out of all the test done. 
+
+
+```{r}
+gm <- lm(Maze1$Pass.Score ~ Maze1$Sensitivity)
+summary(gm)
+```
+The estimated passing score when we consider the average of sensitivity across all data sets in Maze 1 is 0.62
+
+###Residuals
+The distribution of the residuals do not appear to be strongly symmetrical. That means that the model predicts certain points that fall far away from the actual observed points. In our case it can predict the 'Pass.Score' wrongly based on the 'Sensitivity'.
+```{r}
+hist(gm$residuals)
+```
+###Coefficients
+**First row:** The intercept is the expected value of the 'Pass.Score' for the rover to complete maze 1 when I consider the average 'Sensitivity' of all Test in Maze 1. It takes an average 'Sensitivity' of 0.62 to complete Maze 1. 
+
+**Second row:** The effect 'Sensitivity' has on 'Pass.Score' required for the rover to complete Maze 1. The slope term in our model is saying that for every 1 unit increase in the 'Sensitivity' of the rover, the 'Pass.Score' decreased by 1.5655%
+
+###Residual Standard Error
+The actual 'Pass.Score' can deviate from the true regression line by approximately  27.68% based on the 'Sensitivity', on average. Given the mean 'Sensitivity' 0.62   
+
+###Multiple R-squared and Adjusted R-squared
+The R^2 we get is 0.2686 or 26.86% of the variance found in the response variable 'Pass.Score' cab be explained by the predictor variabl 'Sensitivity'. 
+
+
+
+```{r, message=FALSE}
+m1.lm <- lm(Pass.Score ~ IR_Threshold + US_Threshold + Nudge_Threshold + Nudge + Motor.Speed, data = Maze1)
+
+m1P <- predict(m1.lm, list(IR_Threshold = 0.600, US_Threshold = 0.60, Nudge_Threshold = 2, Nudge = 10, Motor.Speed = 0.5))
+m1P
+
+summary(m1.lm)
+```
+
+```{r}
+m2.lm <- lm(Pass.Score ~ IR_Threshold + US_Threshold + Nudge_Threshold + Nudge + Motor.Speed, data = Maze2)
+
+m2P <- predict(m2.lm, list(IR_Threshold = 0.2, US_Threshold = 0.6, Nudge_Threshold = 2, Nudge = 10, Motor.Speed = 1))
+m2P
+
+summary(m2.lm)
+```
+
+```{r}
+summary(m1P)
+```
+
+```{r}
+summary(m2P)
+```
+
+```{r}
+qqPlot(Pass.Score, col = Sensitivity)
+```
+From this QQ plot we can see the normality of the data. In your data there are obvious outliers that disrupt the normality, but those are the Test that failed both Mazes resulting in  'Pass.Score' of 0.
+
+
+```{r}
+Best_Runs1 <- filter(Maze1, Crashes == 0, Pass == 1, Pass.Score >= 0.8)
+Best_Runs1
+
+Worst_Runs1 <- filter(Maze1, Crashes == 1, Pass == 0, Pass.Score < 0.8)
+Worst_Runs1
+
+Best_Runs2 <- filter(Maze2, Crashes == 0, Pass == 1, Pass.Score >= 0.8)
+Best_Runs2
+
+Worst_Runs2 <- filter(Maze2, Crashes == 1, Pass == 0, Pass.Score < 0.8)
+Worst_Runs2
+```
+These are the best and worst runs for Maze 1 and Maze 2
+
+```{r}
+plot(IR_Threshold, Pass.Score)
+plot(US_Threshold, Pass.Score)
+plot(Nudge_Threshold, Pass.Score)
+plot(Nudge, Pass.Score)
+plot(Motor.Speed, Pass.Score)
+```
+The higher the thresholds got the worst the rover performed in some cases. 
+
+#Part4: Conclusion
+The data collected after the evaluation of the system shows that the speed at which the rover reacts to stimuli detected by its sensors (IR and Ultra Sonic Sensors) is a key internal factor that directly affects all internal and external elements. With a rover movement velocity set to 100% and 75% percent of the maximum, the rover performed wrong-way completions (completions were not defined as factors but rather a score, so a wrong way can be valued as 0.75), defined as exiting the track test from the initial entry point. On the other hand, when the rover's movement velocity was set to 50% of the maximum, the rover performed as expected with zero wrong-way completions. However, the data also demonstrated that with 50% percent movement velocity, the rover was able to successfully complete the track tests 50% of the time.  When the movement velocity was set to 75% and 100%, the rover was able to complete the track tests 60% and 80% of the time, respectively.

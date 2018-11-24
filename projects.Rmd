@@ -1,0 +1,21 @@
+---
+title: ""
+---
+
+Here are some projects/assignments I have done during my graduate program.
+here's some examples.
+
+
+
+###[Data Mining & Machine Learning](projects_files/Data Mining & Machine Learning R/Dota2.html)
+
+Predicting the winning team and classifying types of players from a Dota2 dataset.  
+
+###[Data Visualization in R](projects_files/Data_Viz/Card_Activity_On_Campus.html)
+
+Analysis and visualization of card ID activity at St. Thomas University.  
+
+
+###[Stats](projects_files/Stats/Auto_Rover.html)
+
+This project analyzes the raw data a team and I gathered on an autonmous rover going through a custom maze we built. The end goal was to find the best threshold of the sensors to naviagte through any maze.

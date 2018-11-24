@@ -1,0 +1,28 @@
+---
+title: "Assignment 1"
+output: html_notebook
+author: Yasshin Lozano
+---
+
+```{r,message=FALSE}
+# https://www.kaggle.com/theriley106/rate-my-professor-teacher-ratings/version/1 
+library("rjson")
+library(tidyverse)
+setwd("E:\\Users\\lozan\\Desktop")
+RMP <- fromJSON(file("1.json"))
+```
+
+
+
+```{r}
+RMP.v2 <- na.omit(RMP[,1:24])
+RMP.v3 <- subset(RMP.v2, schoolstate_s=="FL" & teacherdepartment_s == "Computer Science")
+head(RMP.v3)
+```
+
+```{r,message=FALSE}
+attach(RMP.v3)
+ggplot(RMP.v3) +
+  geom_point(aes(averageclarityscore_rf,averageratingscore_rf, color=averagehotscore_rf,size=total_number_of_ratings_i))
+```
+This data set contains a sample of professors from a website called RateMyProfessor. It consist of the names, location, and scores of each professors submitted by the students who took the course. The graph you see above is displaying clarity vs. rating. The more clear the professor was the better the overall score they had. That is a given that a clearer professor will get a better score, but what surprised me is the fact that the professors with a higher score were perceived as more attractive to the students. 
